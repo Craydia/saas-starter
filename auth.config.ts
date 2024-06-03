@@ -2,10 +2,13 @@ import Google from "next-auth/providers/google"
 import { env } from "@/env.mjs"
 
 import type { NextAuthConfig } from "next-auth"
+import CredentialsProvider from "next-auth/providers/credentials";
+
 // import { siteConfig } from "@/config/site"
 // import { getUserByEmail } from "@/lib/user";
 // import MagicLinkEmail from "@/emails/magic-link-email"
-// import { prisma } from "@/lib/db"
+import { prisma } from "@/lib/db"
+import bcrypt from "bcryptjs";
 
 export default {
   providers: [
@@ -13,6 +16,48 @@ export default {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
+    CredentialsProvider({
+      name: "Credentials",
+      id: "credentials",
+      credentials: {
+        email: {
+          label: "email",
+          type: "email",
+          placeholder: "email@example.com",
+        },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials: {email: string, password: string}) {
+        
+        // Add logic here to look up the user from the credentials supplied
+        if (credentials == null) return null;
+        // login
+
+        try {
+          const user = await prisma.user.findFirst({
+            where: {
+              email: credentials.email,
+            }
+          });
+
+          if (user) {
+            const isMatch = await bcrypt.compare(
+              credentials.password,
+              user?.password ?? '',
+            );
+            if (isMatch) {
+              return user as any;
+            } else {
+              throw new Error("Email or password is incorrect");
+            }
+          } else {
+            throw new Error("User not found");
+          }
+        } catch (err: any) {
+          throw new Error(err);
+        }
+      },
+    })
     // Email({
     //   sendVerificationRequest: async ({ identifier, url, provider }) => {
     //     const user = await getUserByEmail(identifier);
