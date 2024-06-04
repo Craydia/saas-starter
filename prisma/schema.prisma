@@ -25,8 +25,10 @@ model Account {
   session_state     String?
   createdAt         DateTime @default(now()) @map(name: "created_at")
   updatedAt         DateTime @default(now()) @map(name: "updated_at")
+  business          Business @relation(fields: [businessId], references: [id])
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId String
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -72,4 +74,14 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map(name: "verification_tokens")
+}
+
+model Business {
+  id        String    @id @default(cuid())
+  name      String?
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime  @default(now()) @map(name: "updated_at")
+  Account   Account[]
+
+  @@map(name: "businesses")
 }

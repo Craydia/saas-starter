@@ -36,8 +36,13 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
   async function onSubmit(data: FormData) {
     setIsLoading(true)
 
-    const signInResult = await signIn("email", {
+    if(type === "register"){
+      
+    }
+
+    const signInResult = await signIn("credentials", {
       email: data.email.toLowerCase(),
+      password: data.password,
       redirect: false,
       callbackUrl: searchParams?.get("from") || "/dashboard",
     })
@@ -54,8 +59,8 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
     }
 
     return toast({
-      title: "Check your email",
-      description: "We sent you a login link. Be sure to check your spam too.",
+      title: "Signup Complete!",
+      description: "Start browsing the dashboard to discover our features!",
     })
   }
 
@@ -77,6 +82,19 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
               disabled={isLoading || isGoogleLoading}
               {...register("email")}
             />
+            <Label className="sr-only" htmlFor="email">
+              Password
+            </Label>
+            <Input
+              id="password"
+              placeholder="your-password"
+              type="password"
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect="off"
+              disabled={isLoading || isGoogleLoading}
+              {...register("password")}
+            />
             {errors?.email && (
               <p className="px-1 text-xs text-red-600">
                 {errors.email.message}
@@ -89,7 +107,8 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
             )}
             {type === "register"
               ? "Sign Up with Email"
-              : "Sign In with Email"}
+              : "Sign In with Email"
+            }
           </button>
         </div>
       </form>
@@ -98,7 +117,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background text-muted-foreground px-2">
+          <span className="bg-background px-2 text-muted-foreground">
             Or continue with
           </span>
         </div>

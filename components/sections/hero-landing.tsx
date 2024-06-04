@@ -59,14 +59,14 @@ export default async function HeroLanding() {
           style={{ animationDelay: "0.4s", animationFillMode: "forwards" }}
         >
           <Link
-            href="/pricing"
+            href="/login"
             prefetch={true}
             className={cn(
               buttonVariants({ size: "lg", rounded: "full" }),
               "gap-2",
             )}
           >
-            <span>Go Pricing</span>
+            <span>Start Now</span>
             <Icons.arrowRight className="size-4" />
           </Link>
           <Link

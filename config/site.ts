@@ -10,10 +10,10 @@ export const siteConfig: SiteConfig = {
   url: site_url,
   ogImage: `${site_url}/og.jpg`,
   links: {
-    twitter: "https://twitter.com/miickasmt",
-    github: "https://github.com/mickasmt/next-saas-stripe-starter",
+    twitter: "https://twitter.com/craydiadev",
+    github: "https://github.com/Craydia",
   },
-  mailSupport: "support@saas-starter.com",
+  mailSupport: "info@craydia.com",
 };
 
 export const footerLinks: SidebarNavItem[] = [

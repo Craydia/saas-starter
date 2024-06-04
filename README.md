@@ -33,13 +33,13 @@ All seamlessly integrated with the SaaS Starter to accelerate your development a
 Clone & create this repo locally with the following command:
 
 ```bash
-npx create-next-app my-saas-project --example "https://github.com/mickasmt/next-saas-stripe-starter"
+npx create-next-app my-saas-project --example "https://github.com/Craydia/saas-starter"
 ```
 
 1. Install dependencies using pnpm:
 
 ```sh
-pnpm install
+yarn install
 ```
 
 2. Copy `.env.example` to `.env.local` and update the variables.
@@ -51,7 +51,7 @@ cp .env.example .env.local
 3. Start the development server:
 
 ```sh
-pnpm run dev
+yarn dev
 ```
 
 > [!NOTE]  
@@ -75,9 +75,7 @@ pnpm run dev
 - [x] ~Change database platform for Neon (planetscale removes its free plan on April 2024)~
 - [x] ~Switch subscription plan (enable on stripe dashboard)~
 - [x] ~Update documentation for installation & configuration~
-- [ ] Improve blog design
-- [ ] Improve dashboard design
-- [ ] Upgrade eslint to v9
+- [ ] Add translations
 - [ ] Add resend for success subscriptions
 
 ## Tech Stack + Features
