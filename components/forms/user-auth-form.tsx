@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/shared/icons"
+import { useFetcher } from "@/hooks/use-fetcher"
+
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: string
@@ -29,6 +31,9 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
   } = useForm<FormData>({
     resolver: zodResolver(userAuthSchema),
   })
+  const {fetcher} = useFetcher();
+  const router = useRouter();
+
   const [isLoading, setIsLoading] = React.useState<boolean>(false)
   const [isGoogleLoading, setIsGoogleLoading] = React.useState<boolean>(false)
   const searchParams = useSearchParams()
@@ -37,7 +42,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
     setIsLoading(true)
 
     if(type === "register"){
-      
+      await fetcher('api/auth/signup', "POST", {...data, email: data.email.toLowerCase()})
     }
 
     const signInResult = await signIn("credentials", {
@@ -49,7 +54,6 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
 
     setIsLoading(false)
 
-    // TODO: replace shadcn toast by react-hot-toast
     if (!signInResult?.ok) {
       return toast({
         title: "Something went wrong.",
@@ -58,10 +62,12 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
       })
     }
 
-    return toast({
+    if(type === "register") return toast({
       title: "Signup Complete!",
       description: "Start browsing the dashboard to discover our features!",
     })
+
+    router.push('/dashboard');
   }
 
   return (

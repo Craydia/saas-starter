@@ -4,10 +4,7 @@ import { env } from "@/env.mjs"
 import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// import { siteConfig } from "@/config/site"
-// import { getUserByEmail } from "@/lib/user";
-// import MagicLinkEmail from "@/emails/magic-link-email"
-import { prisma } from "@/lib/db"
+import { getUserByEmail } from "@/lib/user";
 import bcrypt from "bcryptjs";
 
 export default {
@@ -27,23 +24,18 @@ export default {
         },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials: {email: string, password: string}) {
-        
+      async authorize(credentials) {
         // Add logic here to look up the user from the credentials supplied
         if (credentials == null) return null;
         // login
 
         try {
-          const user = await prisma.user.findFirst({
-            where: {
-              email: credentials.email,
-            }
-          });
+          const user = await getUserByEmail(String(credentials?.email))
 
           if (user) {
             const isMatch = await bcrypt.compare(
-              credentials.password,
-              user?.password ?? '',
+              String(credentials?.password),
+              String(user?.password),
             );
             if (isMatch) {
               return user as any;
@@ -57,10 +49,10 @@ export default {
           throw new Error(err);
         }
       },
-    })
+    }),
     // Email({
-    //   sendVerificationRequest: async ({ identifier, url, provider }) => {
-    //     const user = await getUserByEmail(identifier);
+    //   sendVerificationRequest: (async (credentials: any) => {
+    //     const user = await getUserByEmail(credentials.identifier);
     //     if (!user || !user.name) return null;
 
     //     const userVerified = user?.emailVerified ? true : false;
@@ -69,11 +61,11 @@ export default {
     //     try {
     //       const { data, error } = await resend.emails.send({
     //         from: 'SaaS Starter App <onboarding@resend.dev>',
-    //         to: process.env.NODE_ENV === "development" ? 'delivered@resend.dev' : identifier,
+    //         to: process.env.NODE_ENV === "development" ? 'delivered@resend.dev' : credentials.identifier,
     //         subject: authSubject,
     //         react: MagicLinkEmail({
     //           firstName: user?.name as string,
-    //           actionUrl: url,
+    //           actionUrl: credentials.url,
     //           mailType: userVerified ? "login" : "register",
     //           siteName: siteConfig.name
     //         }),
@@ -92,7 +84,8 @@ export default {
     //     } catch (error) {
     //       throw new Error("Failed to send verification email.")
     //     }
-    //   },
-    // }),
+    //     return null;
+    //   }) as any,
+   // }),
   ],
 } satisfies NextAuthConfig

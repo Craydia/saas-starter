@@ -33,7 +33,7 @@ export type TechInput = {
 }
 
 export default interface User {
-  _id: string,
+  id: string,
   password: string,
   email: string,
   name: string,

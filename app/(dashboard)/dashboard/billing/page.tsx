@@ -8,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getCurrentUser } from "@/lib/session";
 import { getUserSubscriptionPlan } from "@/lib/subscription";
 import { constructMetadata } from "@/lib/utils";
+import { useUser } from "@/hooks/use-user";
 
 export const metadata = constructMetadata({
   title: "Billing – SaaS Starter",

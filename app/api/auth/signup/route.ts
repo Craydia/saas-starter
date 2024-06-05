@@ -41,7 +41,7 @@ const handler = async (req: Request) => {
     return NextResponse.json({
       status: 'error',
       message: 'Failed to create user',
-      error: error.message
+      error: 'Server error'
     }, {
       status: 500
     });
