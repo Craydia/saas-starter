@@ -77,6 +77,7 @@ yarn dev
 - [x] ~Update documentation for installation & configuration~
 - [ ] Add translations
 - [ ] Add resend for success subscriptions
+- [ ] Add Google Signup
 
 ## Tech Stack + Features
 

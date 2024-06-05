@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { Icons } from "@/components/shared/icons"
 import { UserAuthForm } from "@/components/forms/user-auth-form"
 import { Suspense } from "react"
+import Image from "next/image";
 
 export const metadata = {
   title: "Create an account",
@@ -23,7 +24,17 @@ export default function RegisterPage() {
       >
         Login
       </Link>
-      <div className="hidden h-full bg-muted lg:block" />
+      <div className="hidden h-full overflow-hidden bg-muted lg:block">
+        <Image
+          className="size-full object-cover object-center"
+          src="https://images.unsplash.com/photo-1555212697-194d092e3b8f?q=80&w=3087&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          alt="preview landing"
+          width={700}
+          height={300}
+          priority={true}
+        />
+      </div>
+
       <div className="lg:p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <div className="flex flex-col space-y-2 text-center">

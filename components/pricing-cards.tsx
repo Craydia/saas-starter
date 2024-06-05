@@ -179,13 +179,10 @@ export function PricingCards({ userId, subscriptionPlan }: PricingCardsProps) {
             className="font-medium text-primary hover:underline"
             href="mailto:support@saas-starter.com"
           >
-            support@saas-starter.com
+            info@craydia.com
           </a>{" "}
-          for to contact our support team.
+          to contact our support team.
           <br />
-          <strong>
-            You can test the subscriptions and won&apos;t be charged.
-          </strong>
         </p>
       </section>
     </MaxWidthWrapper>
