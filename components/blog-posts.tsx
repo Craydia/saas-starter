@@ -5,7 +5,11 @@ import { formatDate } from "@/lib/utils";
 
 import MaxWidthWrapper from "./shared/max-width-wrapper";
 
-export function BlogPosts({ posts }) {
+type Props = {
+  posts: any[]
+}
+
+export function BlogPosts({ posts }: Props) {
   return (
     <MaxWidthWrapper className="space-y-10 py-6 md:py-10">
       <section>

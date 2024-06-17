@@ -21,8 +21,8 @@ export function BillingFormButton({
   let [isPending, startTransition] = useTransition();
   const generateUserStripeSession = generateUserStripe.bind(
     null,
-    offer.stripeIds[year ? "yearly" : "monthly"],
-  );
+    offer.stripeIds[year ? "yearly" : "monthly"] ?? '',
+  ) as any;
 
   const stripeSessionAction = () =>
     startTransition(async () => await generateUserStripeSession());

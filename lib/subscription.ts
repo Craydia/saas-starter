@@ -3,7 +3,7 @@
 import { pricingData } from "@/config/subscriptions";
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
-import { UserSubscriptionPlan } from "types";
+import { UserSubscriptionPlan } from "@/types";
 
 export async function getUserSubscriptionPlan(
   userId: string

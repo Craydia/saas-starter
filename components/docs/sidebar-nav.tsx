@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { SidebarNavItem } from "types";
+import { SidebarNavItem } from "@/types";
 import { docsConfig } from "@/config/docs";
 import { cn } from "@/lib/utils";
 
 export interface DocsSidebarNavProps {
-  setOpen?: (boolean) => void;
+  setOpen?: (boolean: boolean) => void;
 }
 
 export function DocsSidebarNav({ setOpen }: DocsSidebarNavProps) {
@@ -38,7 +38,7 @@ export function DocsSidebarNav({ setOpen }: DocsSidebarNavProps) {
 interface DocsSidebarNavItemsProps {
   items: SidebarNavItem[];
   pathname: string | null;
-  setOpen?: (boolean) => void;
+  setOpen?: (boolean: boolean) => void;
 }
 
 export function DocsSidebarNavItems({

@@ -19,6 +19,7 @@ import { useScroll } from "@/hooks/use-scroll";
 import { cn } from "@/lib/utils";
 
 import { UserAccountNav } from "./user-account-nav";
+import { NavItem } from "@/types";
 
 interface NavBarProps {
   scroll?: boolean;
@@ -59,7 +60,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
 
           {links && links.length > 0 ? (
             <nav className="hidden gap-6 md:flex">
-              {links.map((item, index) => (
+              {links.map((item: NavItem, index: number) => (
                 <Link
                   key={index}
                   href={item.disabled ? "#" : item.href}
