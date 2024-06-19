@@ -61,9 +61,6 @@ yarn dev
 
 > [!WARNING]  
 > You need update `.react-email` folder before use `pnpm run email`. Check the link [here](https://github.com/resend/react-email/issues/868#issuecomment-1828411325) if you have the error : `renderToReadableStream not found`
->
-> After upgrade Auth.js to v5: `NEXTAUTH_URL` has removed from `.env.example`.
-
 
 ## Roadmap
 
@@ -76,6 +73,8 @@ yarn dev
 - [x] ~Switch subscription plan (enable on stripe dashboard)~
 - [x] ~Update documentation for installation & configuration~
 - [ ] Add translations
+- [ ] Improve blog design
+- [ ] Upgrade eslint to v9
 - [ ] Add resend for success subscriptions
 - [ ] Add Google Signup
 
