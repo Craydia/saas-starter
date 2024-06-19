@@ -54,6 +54,12 @@ cp .env.example .env.local
 yarn dev
 ```
 
+4. Sync database and types:
+
+```sh
+yarn prisma generate && yarn prisma db push
+```
+
 > [!NOTE]  
 > I use [npm-check-updates](https://www.npmjs.com/package/npm-check-updates) package for update this project.
 >
