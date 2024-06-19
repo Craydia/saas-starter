@@ -17,6 +17,7 @@ export async function getUserSubscriptionPlan(
       stripeCurrentPeriodEnd: true,
       stripeCustomerId: true,
       stripePriceId: true,
+      stripePaymentId: true
     },
   })
 
@@ -24,17 +25,19 @@ export async function getUserSubscriptionPlan(
     throw new Error("User not found")
   }
 
+  const pricing = pricingData.find(p => p.stripeIds.monthly === user.stripePriceId || p.stripeIds.yearly === user.stripePriceId);
+
   // Check if user is on a paid plan.
-  const isPaid =
+  let isPaid =
     user.stripePriceId &&
-    user.stripeCurrentPeriodEnd?.getTime() + 86_400_000 > Date.now() ? true : false;
+    (user.stripeCurrentPeriodEnd?.getTime() + 86_400_000 > Date.now() || pricing?.ltd) ? true : false;
 
   // Find the pricing data corresponding to the user's plan
   const userPlan =
     pricingData.find((plan) => plan.stripeIds.monthly === user.stripePriceId) ||
     pricingData.find((plan) => plan.stripeIds.yearly === user.stripePriceId);
 
-  const plan = isPaid && userPlan ? userPlan : pricingData[0]
+  const plan = isPaid && userPlan ? userPlan : {title: "Free"}
 
   const interval = isPaid
     ? userPlan?.stripeIds.monthly === user.stripePriceId
@@ -50,6 +53,13 @@ export async function getUserSubscriptionPlan(
       user.stripeSubscriptionId
     )
     isCanceled = stripePlan.cancel_at_period_end
+  }
+  else if(isPaid && user.stripePaymentId) {
+    const stripePlan = await stripe.paymentIntents.retrieve(
+      user.stripePaymentId
+    )
+    isCanceled = stripePlan.status === "canceled";
+    isPaid = !isCanceled;
   }
 
   return {

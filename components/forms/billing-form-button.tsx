@@ -9,7 +9,7 @@ import { Icons } from "@/components/shared/icons";
 
 interface BillingFormButtonProps {
   offer: SubscriptionPlan;
-  subscriptionPlan: UserSubscriptionPlan;
+  subscriptionPlan?: UserSubscriptionPlan;
   year: boolean;
 }
 
@@ -28,7 +28,7 @@ export function BillingFormButton({
     startTransition(async () => await generateUserStripeSession());
 
   const userOffer =
-    subscriptionPlan.stripePriceId ===
+    subscriptionPlan?.stripePriceId ===
     offer.stripeIds[year ? "yearly" : "monthly"];
 
   return (

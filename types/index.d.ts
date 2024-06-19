@@ -66,6 +66,7 @@ export type SubscriptionPlan = {
     monthly: string | null;
     yearly: string | null;
   };
+  ltd?: boolean
 };
 
 export type UserSubscriptionPlan = SubscriptionPlan &

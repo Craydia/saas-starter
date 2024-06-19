@@ -1,6 +1,8 @@
 import Image from "next/image";
 
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
+import { Suspense } from "react"
+import PlayButtonIFrame from "@/components/shared/play-button-iframe";
 
 export default function PreviewLanding() {
   return (
@@ -16,6 +18,11 @@ export default function PreviewLanding() {
               height={1000}
               priority={true}
             />
+            <div className="absolute inset-0 z-10 flex items-center justify-center">
+              <Suspense>
+                <PlayButtonIFrame />
+              </Suspense>
+            </div>
           </div>
         </div>
       </MaxWidthWrapper>

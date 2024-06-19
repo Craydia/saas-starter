@@ -62,7 +62,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
       })
     }
 
-    if(type === "register") return toast({
+    if(type === "register") toast({
       title: "Signup Complete!",
       description: "Start browsing the dashboard to discover our features!",
     })

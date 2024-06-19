@@ -20,6 +20,15 @@ const handler = async (req: Request) => {
       }
     });
 
+    await prisma.account.create({
+      data: {
+        userId: createdUser.id,
+        provider: 'credentials',
+        type: 'email',
+        providerAccountId: createdUser.email ?? ''
+      }
+    })
+
     // Return a successful response with the created user data
     return NextResponse.json({
       status: 'success',
