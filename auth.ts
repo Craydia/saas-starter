@@ -55,7 +55,6 @@ export const {
       return true
     }
   },
-},
   ...authConfig,
   // debug: process.env.NODE_ENV !== "production"
 })
