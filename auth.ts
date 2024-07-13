@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db"
 import authConfig from "@/auth.config"
 import { getUserById } from "@/lib/user"
 
-export const { 
+export const {
   handlers: { GET, POST },
   auth,
 } = NextAuth({
@@ -17,7 +17,7 @@ export const {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.user = {...user};
+        token.user = { ...user };
       }
       return token;
     },
@@ -27,7 +27,35 @@ export const {
       }
       return session;
     },
-  },  
+    async signIn({ user }) {
+      const u = await prisma.user.findFirst({ where: { email: user.email } });
+
+      const email = user.email;
+      const name = user.name;
+
+      if (!u) {
+        const newUser = await prisma.user.create({
+          data: {
+            email,
+            name,
+            emailVerified: new Date(),
+            image: user.image
+          }
+        });
+
+        await prisma.account.create({
+          data: {
+            userId: newUser.id,
+            provider: "google",
+            providerAccountId: user?.email ?? '',
+            type: user.email?.includes("gmail") ? "gmail" : "email-custom"
+          }
+        })
+      }
+      return true
+    }
+  },
+},
   ...authConfig,
   // debug: process.env.NODE_ENV !== "production"
 })

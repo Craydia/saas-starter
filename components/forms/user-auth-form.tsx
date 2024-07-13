@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import Link from "next/link"
 
 import { cn } from "@/lib/utils"
 import { userAuthSchema } from "@/lib/validations/auth"
@@ -144,6 +145,14 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
         )}{" "}
         Google
       </button>
+      {type !== "register" && <p className="px-8 text-center text-sm text-muted-foreground">
+        <Link
+          href="/register"
+          className="hover:text-brand underline underline-offset-4"
+        >
+          Don&apos;t have an account? Sign Up
+        </Link>
+      </p>}
     </div>
   )
 }
