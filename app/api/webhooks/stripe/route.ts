@@ -36,9 +36,9 @@ export async function POST(req: Request) {
         // Update the user stripe into in our database.
         // Since this is the initial subscription, we need to update
         // the subscription id and customer id.
-        await prisma.user.update({
+        await prisma.business.update({
           where: {
-            id: session?.metadata?.userId,
+            id: session?.metadata?.businessId,
           },
           data: {
             stripeSubscriptionId: subscription.id,
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         )
 
         // Update the price id and set the new period end.
-        await prisma.user.update({
+        await prisma.business.update({
           where: {
             stripeSubscriptionId: subscription.id,
           },
@@ -80,11 +80,12 @@ export async function POST(req: Request) {
 
         // Update the user stripe into in our database.
         // This is not a subscription but a LTD
-        await prisma.user.update({
+        await prisma.business.update({
           where: {
-            id: session?.metadata?.userId,
+            id: session?.metadata?.businessId,
           },
           data: {
+            stripeConnectedAccountId: payment.transfer_data?.destination as string,
             stripeCustomerId: payment.customer as string,
             stripePriceId: ltdPlan?.stripeIds.monthly,
             stripeCurrentPeriodEnd: null,

@@ -7,7 +7,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -23,12 +24,6 @@ model User {
   type          String
   provider      String
 
-  stripeCustomerId       String?   @unique @map(name: "stripe_customer_id")
-  stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id")
-  stripePriceId         String?   @map(name: "stripe_price_id")
-  stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
-  stripePaymentId       String?   @map(name: "stripe_payment_id")
-
   business    Business? @relation(fields: [businessId], references: [id])
   businessId  String?
 
@@ -42,6 +37,13 @@ model Business {
   updatedAt DateTime  @default(now()) @map(name: "updated_at")
   users     User[]
   payments  Payment[]
+
+  stripeConnectedAccountId String? @unique @map(name: "stripe_connect_account_id")
+  stripeCustomerId       String?   @unique @map(name: "stripe_customer_id")
+  stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id")
+  stripePriceId         String?   @map(name: "stripe_price_id")
+  stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
+  stripePaymentId       String?   @map(name: "stripe_payment_id")
 
   @@map(name: "businesses")
 }
@@ -57,7 +59,7 @@ model Payment {
   customDelayDays  Int            @map(name: "custom_delay_days")
   servicedAt       DateTime       @map(name: "serviced_at")
 
-  link        String
+  link        String    @unique
   acceptedAt  DateTime
   payedAt     DateTime
 
