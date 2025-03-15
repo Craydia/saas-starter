@@ -16,18 +16,11 @@ const handler = async (req: Request) => {
         ...user,
         password: hashedPassword,
         emailVerified: undefined,
-        id: undefined
+        id: undefined,
+        provider: "credentials",
+        type: user.email?.includes("gmail") ? "gmail" : "email-custom"
       }
     });
-
-    await prisma.account.create({
-      data: {
-        userId: createdUser.id,
-        provider: 'credentials',
-        type: 'email',
-        providerAccountId: createdUser.email ?? ''
-      }
-    })
 
     // Return a successful response with the created user data
     return NextResponse.json({

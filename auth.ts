@@ -39,18 +39,11 @@ export const {
             email,
             name,
             emailVerified: new Date(),
-            image: user.image
-          }
-        });
-
-        await prisma.account.create({
-          data: {
-            userId: newUser.id,
+            image: user.image,
             provider: "google",
-            providerAccountId: user?.email ?? '',
             type: user.email?.includes("gmail") ? "gmail" : "email-custom"
           }
-        })
+        });
       }
       return true
     }

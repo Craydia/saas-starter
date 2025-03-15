@@ -10,42 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Account {
-  id                String    @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?   @db.Text
-  access_token      String?   @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?   @db.Text
-  session_state     String?
-  createdAt         DateTime  @default(now()) @map(name: "created_at")
-  updatedAt         DateTime  @default(now()) @map(name: "updated_at")
-  business          Business? @relation(fields: [businessId], references: [id])
-
-  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  businessId String?
-
-  @@unique([provider, providerAccountId])
-  @@index([userId])
-  @@map(name: "accounts")
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map(name: "sessions")
-}
-
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -56,25 +20,19 @@ model User {
   createdAt     DateTime  @default(now()) @map(name: "created_at")
   updatedAt     DateTime  @default(now()) @map(name: "updated_at")
 
-  accounts Account[]
-  sessions Session[]
+  type          String
+  provider      String
 
   stripeCustomerId       String?   @unique @map(name: "stripe_customer_id")
   stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id")
-  stripePriceId          String?   @map(name: "stripe_price_id")
+  stripePriceId         String?   @map(name: "stripe_price_id")
   stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
-  stripePaymentId        String?   @map(name: "stripe_payment_id")
+  stripePaymentId       String?   @map(name: "stripe_payment_id")
+
+  business    Business? @relation(fields: [businessId], references: [id])
+  businessId  String?
 
   @@map(name: "users")
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-  @@map(name: "verification_tokens")
 }
 
 model Business {
@@ -82,7 +40,59 @@ model Business {
   name      String?
   createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime  @default(now()) @map(name: "updated_at")
-  Account   Account[]
+  users     User[]
+  payments  Payment[]
 
   @@map(name: "businesses")
+}
+
+model Payment {
+  id               String          @id @default(uuid())
+  name             String
+  price            Float
+  description      String
+  payload          Json
+  images           String[]
+  transactionTime  TransactionTime @map(name: "transaction_time")
+  customDelayDays  Int            @map(name: "custom_delay_days")
+  servicedAt       DateTime       @map(name: "serviced_at")
+
+  link        String
+  acceptedAt  DateTime
+  payedAt     DateTime
+
+  createdAt   DateTime  @default(now())
+  invoice     Invoice?
+  business    Business  @relation(fields: [businessId], references: [id])
+  businessId  String
+
+  @@map(name: "payments")
+}
+
+model Invoice {
+  id        String        @id @default(uuid())
+  xml       String
+  status    InvoiceStatus
+  
+  createdAt   DateTime  @default(now())
+  payment     Payment   @relation(fields: [paymentId], references: [id])
+  paymentId   String    @unique
+
+  @@map(name: "invoices")
+}
+
+enum InvoiceStatus {
+  ready
+  sent_to_sdi
+  approved_by_sdi
+  rejected_by_sdi
+}
+
+enum TransactionTime {
+  now
+  end_of_month
+  start_of_next_month
+  middle_of_next_month
+  end_of_next_month
+  end_of_second_next_month
 }
