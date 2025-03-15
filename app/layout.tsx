@@ -1,14 +1,18 @@
 import "@/styles/globals.css";
+import { Inter } from 'next/font/google'
+import { SessionProvider } from '@/providers/session-provider'
 
 import { fontHeading, fontSans, fontUrban } from "@/assets/fonts";
-import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 
 import { cn, constructMetadata } from "@/lib/utils";
-import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@/components/analytics";
 import ModalProvider from "@/components/modals/providers";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
+import { AuthProvider } from "@/contexts/auth-context";
+import { Toaster } from "@/components/ui/toaster";
+
+const inter = Inter({ subsets: ['latin'] })
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -22,10 +26,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <head />
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased",
+          "bg-background min-h-screen font-sans antialiased",
           fontSans.variable,
           fontUrban.variable,
           fontHeading.variable,
+          inter.className
         )}
       >
         <SessionProvider>
@@ -35,9 +40,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
             enableSystem
             disableTransitionOnChange
           >
-            <ModalProvider>{children}</ModalProvider>
-            <Analytics />
-            <Toaster richColors closeButton />
+            <AuthProvider>
+              <ModalProvider>{children}</ModalProvider>
+              <Analytics />
+              <Toaster />
+            </AuthProvider>
           </ThemeProvider>
         </SessionProvider>
       </body>

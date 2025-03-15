@@ -1,9 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import Link from "next/link"
@@ -15,8 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/shared/icons"
-import { useFetcher } from "@/hooks/use-fetcher"
-
+import { supabase } from "@/lib/supabase"
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: string
@@ -32,43 +30,67 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
   } = useForm<FormData>({
     resolver: zodResolver(userAuthSchema),
   })
-  const {fetcher} = useFetcher();
-  const router = useRouter();
+  const router = useRouter()
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false)
   const [isGoogleLoading, setIsGoogleLoading] = React.useState<boolean>(false)
-  const searchParams = useSearchParams()
 
   async function onSubmit(data: FormData) {
     setIsLoading(true)
 
-    if(type === "register"){
-      await fetcher('api/auth/signup', "POST", {...data, email: data.email.toLowerCase()})
-    }
+    try {
+      if (type === "register") {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: data.email.toLowerCase(),
+          password: data.password,
+        })
 
-    const signInResult = await signIn("credentials", {
-      email: data.email.toLowerCase(),
-      password: data.password,
-      redirect: false,
-      callbackUrl: searchParams?.get("from") || "/dashboard",
-    })
+        if (signUpError) throw signUpError
 
-    setIsLoading(false)
+        toast({
+          title: "Signup Complete!",
+          description: "Please check your email to verify your account.",
+        })
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: data.email.toLowerCase(),
+          password: data.password,
+        })
 
-    if (!signInResult?.ok) {
-      return toast({
+        if (signInError) throw signInError
+
+        router.push('/dashboard')
+      }
+    } catch (error: any) {
+      toast({
         title: "Something went wrong.",
-        description: "Your sign in request failed. Please try again.",
+        description: error.message || "Your authentication request failed. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
     }
+  }
 
-    if(type === "register") toast({
-      title: "Signup Complete!",
-      description: "Start browsing the dashboard to discover our features!",
-    })
-
-    router.push('/dashboard');
+  async function handleGoogleSignIn() {
+    try {
+      setIsGoogleLoading(true)
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      })
+      if (error) throw error
+    } catch (error: any) {
+      toast({
+        title: "Something went wrong.",
+        description: error.message || "Your Google sign in request failed. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsGoogleLoading(false)
+    }
   }
 
   return (
@@ -97,7 +119,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
               placeholder="your-password"
               type="password"
               autoCapitalize="none"
-              autoComplete="email"
+              autoComplete="current-password"
               autoCorrect="off"
               disabled={isLoading || isGoogleLoading}
               {...register("password")}
@@ -124,7 +146,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
+          <span className="bg-background text-muted-foreground px-2">
             Or continue with
           </span>
         </div>
@@ -132,10 +154,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
       <button
         type="button"
         className={cn(buttonVariants({ variant: "outline" }))}
-        onClick={() => {
-          setIsGoogleLoading(true)
-          signIn("google")
-        }}
+        onClick={handleGoogleSignIn}
         disabled={isLoading || isGoogleLoading}
       >
         {isGoogleLoading ? (
@@ -145,7 +164,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
         )}{" "}
         Google
       </button>
-      {type !== "register" && <p className="px-8 text-center text-sm text-muted-foreground">
+      {type !== "register" && <p className="text-muted-foreground px-8 text-center text-sm">
         <Link
           href="/register"
           className="hover:text-brand underline underline-offset-4"

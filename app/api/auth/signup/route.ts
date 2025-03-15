@@ -1,60 +1,49 @@
-import { prisma } from "@/lib/db";
-import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
-import {middlewareChain} from "@/middleware/handler";
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import { NextResponse } from "next/server"
 
-const handler = async (req: Request) => {
+export async function POST(req: Request) {
   try {
-    const user = await req.json();
+    const user = await req.json()
+    const supabase = createRouteHandlerClient({ cookies })
     
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(user.password, 5);
-
-    // Create the user in the database
-    const createdUser = await prisma.user.create({
-      data: {
-        ...user,
-        password: hashedPassword,
-        emailVerified: undefined,
-        id: undefined
-      }
-    });
-
-    await prisma.account.create({
-      data: {
-        userId: createdUser.id,
-        provider: 'credentials',
-        type: 'email',
-        providerAccountId: createdUser.email ?? ''
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: user.email.toLowerCase(),
+      password: user.password,
+      options: {
+        data: {
+          name: user.name,
+        }
       }
     })
+
+    if (signUpError) {
+      throw signUpError
+    }
 
     // Return a successful response with the created user data
     return NextResponse.json({
       status: 'success',
       message: 'User created successfully',
       user: {
-        id: createdUser.id,
-        email: createdUser.email,
-        name: createdUser.name,
-        // Exclude the password from the response
+        id: data.user?.id,
+        email: data.user?.email,
+        name: data.user?.user_metadata.name,
       }
     }, {
       status: 200
-    });
+    })
 
-  } catch (error) {
-    console.error("Error creating user:", error);
+  } catch (error: any) {
+    console.error("Error creating user:", error)
 
     // Return an error response
     return NextResponse.json({
       status: 'error',
       message: 'Failed to create user',
-      error: 'Server error'
+      error: error.message || 'Server error'
     }, {
       status: 500
-    });
+    })
   }
-};
-
-export const POST = middlewareChain(handler)
+}

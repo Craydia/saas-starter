@@ -1,59 +1,48 @@
-import { NextRequest } from "next/server";
-import {
-  apiAuthPrefix,
-  authRoutes,
-  DEFAULT_LOGIN_REDIRECT,
-  publicRoutes,
-} from "@/routes";
-import NextAuth, { Session } from "next-auth";
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-import authConfig from "./auth.config";
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req, res })
 
-const { auth: middleware } = NextAuth(authConfig);
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-export default middleware(
-  (req: NextRequest & { auth: Session | null }): Response | void => {
-    const { nextUrl } = req;
-    const isLoggedIn = !!req.auth;
+  // If there's no session and the user is trying to access a protected route
+  if (!session && (
+    req.nextUrl.pathname.startsWith('/dashboard') ||
+    req.nextUrl.pathname.startsWith('/settings')
+  )) {
+    const redirectUrl = req.nextUrl.clone()
+    redirectUrl.pathname = '/login'
+    redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
 
-    const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-    const isPublicRoute = publicRoutes.some((route) => {
-      if (route === "/") {
-        return nextUrl.pathname === route;
-      } else {
-        return nextUrl.pathname.startsWith(route);
-      }
-    });
+  // If there's a session and the user is trying to access auth pages
+  if (session && (
+    req.nextUrl.pathname.startsWith('/login') ||
+    req.nextUrl.pathname.startsWith('/register')
+  )) {
+    const redirectUrl = req.nextUrl.clone()
+    redirectUrl.pathname = '/dashboard'
+    return NextResponse.redirect(redirectUrl)
+  }
 
-    const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  return res
+}
 
-    if (isApiAuthRoute) return;
-
-    if (isAuthRoute) {
-      if (isLoggedIn) {
-        return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
-      }
-      return;
-    }
-
-    if (!isLoggedIn && !isPublicRoute) {
-      let callbackUrl = nextUrl.pathname;
-      if (nextUrl.search) {
-        callbackUrl += nextUrl.search;
-      }
-
-      const encodedCallbackUrl = encodeURIComponent(callbackUrl);
-
-      return Response.redirect(
-        new URL(`/login?callbackUrl=${encodedCallbackUrl}`, nextUrl),
-      );
-    }
-
-    return;
-  },
-);
-
-// Optionally, don't invoke Middleware on some paths
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next|api).*)", "/"],
-};
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public (public files)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+  ],
+}

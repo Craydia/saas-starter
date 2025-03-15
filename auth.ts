@@ -1,60 +1,97 @@
-import NextAuth from "next-auth"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { prisma } from "@/lib/db"
-import authConfig from "@/auth.config"
-import { getUserById } from "@/lib/user"
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import { cache } from 'react'
+import { authConfig } from './auth.config'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { NextResponse } from 'next/server'
 
-export const {
-  handlers: { GET, POST },
-  auth,
-} = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-    // error: "/auth/error",
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.user = { ...user };
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token) {
-        session.user = await getUserById((token.user as any)?.id) as any;
-      }
-      return session;
-    },
-    async signIn({ user }) {
-      const u = await prisma.user.findFirst({ where: { email: user.email } });
+export const createServerClient = cache(() =>
+  createServerComponentClient({ cookies })
+)
 
-      const email = user.email;
-      const name = user.name;
+export type Session = {
+  user: {
+    id: string
+    email?: string
+    name?: string
+    image?: string
+  }
+  expires: string
+}
 
-      if (!u) {
-        const newUser = await prisma.user.create({
-          data: {
-            email,
-            name,
-            emailVerified: new Date(),
-            image: user.image
-          }
-        });
+export type AuthUser = Session['user']
 
-        await prisma.account.create({
-          data: {
-            userId: newUser.id,
-            provider: "google",
-            providerAccountId: user?.email ?? '',
-            type: user.email?.includes("gmail") ? "gmail" : "email-custom"
-          }
-        })
-      }
-      return true
+export async function auth(): Promise<Session | null> {
+  const supabase = createServerClient()
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) return null
+
+    return {
+      user: {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.user_metadata?.name,
+        image: session.user.user_metadata?.avatar_url,
+      },
+      expires: new Date(session.expires_at!).toISOString(),
     }
-  },
-  ...authConfig,
-  // debug: process.env.NODE_ENV !== "production"
-})
+  } catch (error) {
+    console.error('Error:', error)
+    return null
+  }
+}
+
+export async function signIn(provider: string, options?: { callbackUrl: string }) {
+  const supabase = createServerClient()
+  
+  if (provider === 'google') {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: options?.callbackUrl || `${window.location.origin}/auth/callback`,
+      },
+    })
+    if (error) throw error
+    return data
+  }
+  
+  throw new Error(`Provider ${provider} not supported`)
+}
+
+export async function signOut() {
+  const supabase = createServerClient()
+  const { error } = await supabase.auth.signOut()
+  if (error) throw error
+}
+
+export const { pages } = authConfig
+
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+
+  if (code) {
+    const supabase = createRouteHandlerClient({ cookies })
+    await supabase.auth.exchangeCodeForSession(code)
+  }
+
+  // URL to redirect to after sign in process completes
+  return NextResponse.redirect(requestUrl.origin)
+}
+
+export async function POST(request: Request) {
+  const supabase = createRouteHandlerClient({ cookies })
+  
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    
+    if (error) throw error
+    
+    return NextResponse.json({ session })
+  } catch (error) {
+    console.error('Auth error:', error)
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
+  }
+}
