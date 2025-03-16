@@ -37,6 +37,7 @@ export default interface User {
   password: string,
   email: string,
   name: string,
+  businessId: string,
   type: UserTypeEnum,
   looking: boolean,
   contactLocation: ContactLocationEnum,

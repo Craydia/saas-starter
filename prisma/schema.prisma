@@ -33,10 +33,10 @@ model User {
 model Business {
   id        String    @id @default(cuid())
   name      String?
+  
+  secretCode     String?  @unique @map(name: "secret_code")
   createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime  @default(now()) @map(name: "updated_at")
-  users     User[]
-  payments  Payment[]
 
   stripeConnectedAccountId String? @unique @map(name: "stripe_connect_account_id")
   stripeCustomerId       String?   @unique @map(name: "stripe_customer_id")
@@ -44,6 +44,9 @@ model Business {
   stripePriceId         String?   @map(name: "stripe_price_id")
   stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
   stripePaymentId       String?   @map(name: "stripe_payment_id")
+
+  users     User[]
+  payments  Payment[]
 
   @@map(name: "businesses")
 }

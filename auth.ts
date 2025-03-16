@@ -34,14 +34,14 @@ export const {
       const name = user.name;
 
       if (!u) {
-        const newUser = await prisma.user.create({
+        await prisma.user.create({
           data: {
             email,
             name,
             emailVerified: new Date(),
             image: user.image,
             provider: "google",
-            type: user.email?.includes("gmail") ? "gmail" : "email-custom"
+            type: user.email?.includes("gmail") ? "gmail" : "email-custom",
           }
         });
       }
